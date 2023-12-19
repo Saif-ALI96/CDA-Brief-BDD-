@@ -6,20 +6,20 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: your_password
-      POSTGRES_USER: your_username
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
       POSTGRES_DB: your_database_name
     ports:
       - "5432:5432"
     volumes:
-      - pg_data:/var/lib/postgres/data
+      - pg_data:/var/lib/postgresql/data
 
   pg-admin:
     image: dpage/pgadmin4:6
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@email.com
       PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_LISTEN_PORT: 5050
+      # PGADMIN_LISTEN_PORT: 5050
     ports:
       - "5050:5050"
 
