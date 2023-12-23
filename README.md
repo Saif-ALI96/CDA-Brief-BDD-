@@ -1,4 +1,23 @@
-# CDA-Brief-BDD
+# CDA-Brief-BDD / NetStream
+
+### Docker container - PostgreSQL DataBase
+
+To run the docker container with the PostgreSQL database you need to install :
+
+- Docker
+- Git
+- An SQL Client
+
+Please follow this steps to run the container :
+
+- git clone the repo
+- run this command in a console (be careful of the directory) :
+
+```bash
+docker compose up
+```
+
+### SQL Requests
 
 #### Titles and release dates of films from newest to oldest
 
@@ -55,16 +74,16 @@ WHERE
 #### add one movie
 
 ```sql
-INSERT INTO movies (title,release_date,duration,creation_dt,modification_dt) VALUES
-('Iron Man','2008-04-30', 126,'20232-12-22','2023-12-22');
+INSERT INTO movies (title,release_date,duration) VALUES
+('Iron Man','2008-04-30', 126);
 ```
 
 #### add an actor/actress
 
 ```sql
-INSERT INTO actors (first_name,last_name,role_actor,birthday,creation_dt,modification_dt)
+INSERT INTO actors (first_name,last_name,role_actor,birthday)
 VALUES
-('Danial','Radcliffe','Harry Potter', '1989-07-23','2023-12-22','2023-12-22');
+('Danial','Radcliffe','Harry Potter', '1989-07-23');
 ```
 
 #### Edit a movie
@@ -86,7 +105,39 @@ WHERE first_name = 'Mia';
 
 ```sql
 SELECT *
-FROM acotrs a
+FROM actors a
 ORDER BY creation_dt DESC
 LIMIT 3;
+```
+
+## Advanced SQL Requests
+
+#### Call the stored procedure to get films by Christopher Smith :
+
+```sql
+SELECT
+    m.title,
+    m.director_id,
+    d.first_name,
+    d.last_name
+FROM
+    movies m
+INNER JOIN
+    directors d on (m.director_id = d.director_id)
+where
+    m.director_id= 5;
+```
+
+#### Update users :
+
+```sql
+UPDATE users
+SET first_name = 'ceile', last_name ='johan' , password_user = 344564454534
+WHERE user_id = 8;
+```
+
+#### Select all records in the update table :
+
+```sql
+select * from users_updates uu ;
 ```
