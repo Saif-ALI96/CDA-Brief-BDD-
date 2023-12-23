@@ -1,6 +1,5 @@
 -- create tables including entities and attributes
-
-create table actors(
+CREATE TABLE IF NOT EXISTS actors(
   actor_id SERIAL,
   first_name VARCHAR(50) not null,
   last_name VARCHAR(50) not null ,
@@ -11,7 +10,7 @@ create table actors(
   PRIMARY KEY(actor_id)
 );
 
-create table directors(
+CREATE TABLE IF NOT EXISTS  directors(
   director_id SERIAL,
   first_name VARCHAR(50) not null,
   last_name VARCHAR(50) not null ,
@@ -20,14 +19,14 @@ create table directors(
   PRIMARY KEY(director_id)
 );
 
-CREATE TABLE movies (
+CREATE TABLE IF NOT EXISTS  movies (
 
   movie_id SERIAL,
   title VARCHAR(200) NOT NULL,
-  director_id INT NOT NULL,
+  director_id INT,
   release_date DATE NOT NULL,
   duration INT NOT NULL,
-  actor_id INT NOT NULL,
+  actor_id INT,
   creation_dt DATE NOT NULL,
   modification_dt DATE NOT NULL,
   PRIMARY KEY (movie_id),
@@ -40,7 +39,7 @@ CREATE TABLE movies (
 
 );
 
-create table users(
+CREATE TABLE IF NOT EXISTS  users(
   user_id SERIAL,
   first_name VARCHAR(50) not null,
   last_name VARCHAR(50) not null ,
@@ -53,10 +52,26 @@ create table users(
   PRIMARY KEY(user_id)
 );
 
-CREATE TABLE watching(
+CREATE TABLE IF NOT EXISTS  watching(
   movie_id INT REFERENCES movies(movie_id),
   user_id INT REFERENCES users(user_id)
 );
+
+CREATE TABLE IF NOT EXISTS users_updates (
+    update_id SERIAL PRIMARY KEY,
+    user_id INT,
+    change_date DATE,
+    old_last_name VARCHAR(100),
+    new_last_name VARCHAR(100),
+    old_first_name VARCHAR(100),
+    new_first_name VARCHAR(100),
+    old_email VARCHAR(250),
+    new_email VARCHAR(250),
+    old_password VARCHAR(50),
+    new_password VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
 
 
 
@@ -160,3 +175,85 @@ INSERT INTO watching VALUES
 (14, 4),
 (12, 3),
 (11, 5);
+
+
+-- create function to generate the date
+
+
+CREATE OR REPLACE FUNCTION trigger_date()
+RETURNS TRIGGER
+AS $$
+BEGIN
+-- If the row is newly inserted, update the creation_dt column
+IF TG_OP = 'INSERT' THEN
+NEW.creation_dt := NOW();
+END IF;
+
+-- Always update the modification_dt column when inserting or updating
+
+    NEW.modification_dt := NOW();
+
+    RETURN NEW;
+
+END;
+
+$$
+LANGUAGE plpgsql;
+
+
+--  Create trigger function for users_updates
+
+
+CREATE OR REPLACE FUNCTION users_updates()
+RETURNS TRIGGER
+AS $$
+BEGIN
+    -- Insert a new line in users updates with the changes
+    INSERT INTO users_updates (
+        user_id,
+        change_date,
+        old_last_name, new_last_name,
+        old_first_name, new_first_name,
+        old_email, new_email,
+        old_password, new_password
+    ) VALUES (
+        NEW.user_id,
+        CURRENT_DATE,
+        OLD.last_name, NEW.last_name,
+        OLD.first_name, NEW.first_name,
+        OLD.email, NEW.email,
+        OLD.password_user, NEW.password_user
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--  Create trigger on UserTable
+
+
+CREATE TRIGGER user_table_trigger
+AFTER UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION users_updates();
+
+
+--  Create trigger on actors
+
+
+CREATE TRIGGER trigger_date
+BEFORE INSERT OR UPDATE ON actors
+FOR EACH ROW
+EXECUTE FUNCTION trigger_date();
+$$
+
+
+
+--  Create trigger on movies
+CREATE TRIGGER trigger_date
+BEFORE INSERT OR UPDATE ON movies
+FOR EACH ROW
+EXECUTE FUNCTION trigger_date();
+
+
